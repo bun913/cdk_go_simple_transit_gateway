@@ -29,8 +29,13 @@ func (nr Network) CreateNetworkResources() awsec2.Vpc {
 		MaxAzs:             jsii.Number(2),
 		EnableDnsSupport:   jsii.Bool(true),
 		EnableDnsHostnames: jsii.Bool(true),
-		VpcName:            jsii.String("Shared"),
+		VpcName:            jsii.String(nr.vpcName),
 		SubnetConfiguration: &[]*awsec2.SubnetConfiguration{
+			{
+				Name:       jsii.String("TransitGateway"),
+				SubnetType: awsec2.SubnetType_PRIVATE_ISOLATED,
+				CidrMask:   jsii.Number(24),
+			},
 			{
 				Name:       jsii.String("Private"),
 				SubnetType: awsec2.SubnetType_PRIVATE_ISOLATED,
