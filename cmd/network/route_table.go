@@ -26,7 +26,6 @@ func NewRouteToTransitGateway(scope constructs.Construct, name string, vpc awsec
 	}
 }
 
-// createRouteToTransitGateway creates a route to the Transit Gateway.
 func (rttg routeToTransitGateway) CreateRouteToTransitGateway() {
 	subnets := rttg.vpc.SelectSubnets(&awsec2.SubnetSelection{
 		SubnetGroupName: jsii.String("Private"),

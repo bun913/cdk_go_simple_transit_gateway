@@ -19,9 +19,7 @@ func NewVpcRouteAssociation(name string, vpcAttachment awsec2.CfnTransitGatewayA
 		routeTable:    routeTable,
 	}
 }
-
-func (vra VpcRouteAssociation) Create() {
-	// Association
+func (vra VpcRouteAssociation) Create() { // Association
 	awsec2.NewCfnTransitGatewayRouteTableAssociation(vra.vpcAttachment, jsii.String(vra.name+"Association"), &awsec2.CfnTransitGatewayRouteTableAssociationProps{
 		TransitGatewayAttachmentId: vra.vpcAttachment.Ref(),
 		TransitGatewayRouteTableId: vra.routeTable.Ref(),
@@ -53,14 +51,12 @@ func NewVpcsConnection(hubVpc awsec2.Vpc, hubVpcAttachment awsec2.CfnTransitGate
 }
 
 func (cv VpcsConnection) Create() {
-	// HubVPCのルートテーブルにルート追加
-	awsec2.NewCfnTransitGatewayRoute(cv.hubVpc, jsii.String("HubVpcToSpokeVpc"), &awsec2.CfnTransitGatewayRouteProps{
+	awsec2.NewCfnTransitGatewayRoute(cv.spokeVpc, jsii.String("ToSpokeVpc"), &awsec2.CfnTransitGatewayRouteProps{
 		DestinationCidrBlock:       cv.spokeVpc.VpcCidrBlock(),
 		TransitGatewayAttachmentId: cv.spokeVpcAttachment.Ref(),
 		TransitGatewayRouteTableId: cv.routetable.Ref(),
 	})
-	// SpokeVPCのルートテーブルにルート追加
-	awsec2.NewCfnTransitGatewayRoute(cv.spokeVpc, jsii.String("SpokeVpcToHubVpc"), &awsec2.CfnTransitGatewayRouteProps{
+	awsec2.NewCfnTransitGatewayRoute(cv.hubVpc, jsii.String("ToHubVpc"), &awsec2.CfnTransitGatewayRouteProps{
 		DestinationCidrBlock:       cv.hubVpc.VpcCidrBlock(),
 		TransitGatewayAttachmentId: cv.hubVpcAttachment.Ref(),
 		TransitGatewayRouteTableId: cv.routetable.Ref(),
