@@ -1,9 +1,9 @@
 package main
 
 import (
+	"transit_gw/cmd/hub_spoke"
 	"transit_gw/cmd/network"
 	"transit_gw/cmd/server"
-	"transit_gw/cmd/vpc_hub"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -49,13 +49,15 @@ func main() {
 	workloadServer := server.NewServer(stack, "WorkloadVPCInstance", workloadVpc)
 	workloadServer.CreateServerResources()
 
-	// Transit GatewayによるVPC間の双方向通信の許可
-	hubParameters := vpc_hub.NewHubParameters(stack, sharedVpc, workloadVpc)
+	// Transit GatewayによるVPC間の双方向通信を実現するためのリソースを作成
+	hubParameters := hub_spoke.NewHubParameters(stack, sharedVpc, workloadVpc)
 	hubResult := hubParameters.CreateHubResources()
 
 	// EC2が属するサブネットのルートテーブルからTransit Gatewayへのルートを追加
-	routeToTransit := network.NewRouteToTransitGateway(stack, sharedVpc, workloadVpc, hubResult.Tgw)
-	routeToTransit.CreateRouteToTransitGateway()
+	routeHubSubnetToTransit := network.NewRouteToTransitGateway(stack, "HubSubnetToTransitGW", sharedVpc, hubResult.Tgw, hubResult.HubAttachment)
+	routeHubSubnetToTransit.CreateRouteToTransitGateway()
+	routeSpokeSubnetToTransit := network.NewRouteToTransitGateway(stack, "SpokeSubnetToTransitGW", workloadVpc, hubResult.Tgw, hubResult.SpokeAttachment)
+	routeSpokeSubnetToTransit.CreateRouteToTransitGateway()
 
 	app.Synth(nil)
 }

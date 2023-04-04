@@ -9,38 +9,34 @@ import (
 )
 
 type routeToTransitGateway struct {
-	scope       constructs.Construct
-	sharedVpc   awsec2.Vpc
-	workloadVpc awsec2.Vpc
-	tgw         awsec2.CfnTransitGateway
+	scope         constructs.Construct
+	name          string
+	vpc           awsec2.Vpc
+	tgw           awsec2.CfnTransitGateway
+	tgwAttachment awsec2.CfnTransitGatewayAttachment
 }
 
-func NewRouteToTransitGateway(scope constructs.Construct, sharedVpc awsec2.Vpc, workloadVpc awsec2.Vpc, tgw awsec2.CfnTransitGateway) routeToTransitGateway {
+func NewRouteToTransitGateway(scope constructs.Construct, name string, vpc awsec2.Vpc, tgw awsec2.CfnTransitGateway, tgwAttachment awsec2.CfnTransitGatewayAttachment) routeToTransitGateway {
 	return routeToTransitGateway{
-		scope:       scope,
-		sharedVpc:   sharedVpc,
-		workloadVpc: workloadVpc,
-		tgw:         tgw,
+		scope:         scope,
+		name:          name,
+		vpc:           vpc,
+		tgw:           tgw,
+		tgwAttachment: tgwAttachment,
 	}
 }
 
 // createRouteToTransitGateway creates a route to the Transit Gateway.
 func (rttg routeToTransitGateway) CreateRouteToTransitGateway() {
-	// Create a route table for the Transit Gateway.
-	rttg.createRouteToTransitGateway("sharedToWorkload", rttg.sharedVpc)
-	rttg.createRouteToTransitGateway("workloadToShared", rttg.workloadVpc)
-}
-
-func (rttg routeToTransitGateway) createRouteToTransitGateway(name string, fromVpc awsec2.Vpc) {
-	subnets := fromVpc.SelectSubnets(&awsec2.SubnetSelection{
+	subnets := rttg.vpc.SelectSubnets(&awsec2.SubnetSelection{
 		SubnetGroupName: jsii.String("Private"),
 	}).Subnets
 	for i, subnet := range *subnets {
-		routeName := fmt.Sprintf("%s%d", name, i)
+		routeName := fmt.Sprintf("%s%d", rttg.name, i)
 		awsec2.NewCfnRoute(rttg.scope, jsii.String(routeName), &awsec2.CfnRouteProps{
 			RouteTableId:         subnet.RouteTable().RouteTableId(),
 			DestinationCidrBlock: jsii.String("0.0.0.0/0"),
 			TransitGatewayId:     rttg.tgw.Ref(),
-		})
+		}).AddDependency(rttg.tgwAttachment)
 	}
 }

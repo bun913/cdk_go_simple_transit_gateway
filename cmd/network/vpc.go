@@ -34,7 +34,7 @@ func (nr Network) CreateNetworkResources() awsec2.Vpc {
 			{
 				Name:       jsii.String("TransitGateway"),
 				SubnetType: awsec2.SubnetType_PRIVATE_ISOLATED,
-				CidrMask:   jsii.Number(24),
+				CidrMask:   jsii.Number(28),
 			},
 			{
 				Name:       jsii.String("Private"),
